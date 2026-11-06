@@ -21,6 +21,7 @@ const businessSchema = z.object({
   maxDaysAhead: z.coerce.number().int().min(1).max(180),
   taxRatePercent: z.coerce.number().min(0).max(30),
   zelleInfo: z.string().trim().max(200),
+  defaultMarkupPercent: z.coerce.number().min(0).max(500),
 });
 
 export async function saveBusiness(form: FormData) {

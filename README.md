@@ -1,6 +1,6 @@
 # Ask Badger CRM
 
-Scheduling, appointment confirmation, and (coming next) estimates, invoicing, payments, and inventory for Ask Badger Electric.
+Scheduling, appointment confirmation, materials and inventory, and (coming next) estimates, invoicing, and payments for Ask Badger Electric.
 
 ## What works today
 
@@ -15,6 +15,13 @@ Scheduling, appointment confirmation, and (coming next) estimates, invoicing, pa
 - Move, cancel, complete, or reopen jobs. Private notes and job address per job.
 - Customer list with search and job history.
 - Settings: business details, working hours, gap between jobs, minimum notice, booking window, services offered, time off, sales tax rate, and Zelle details (used by invoices later).
+
+**Materials and inventory** (`/admin/materials`)
+- Parts list with store, SKU, barcode, your cost, markup, what you charge, stock on hand, where it's kept, and a low-stock warning.
+- Stock history for every change: bought, used on a job, counted, or adjusted.
+- **Barcode scanner** on your phone camera (needs the site on https), or type the number / use a handheld scanner. Known items show stock with quick "+ Bought" / "− Used" buttons. New items are looked up on UPCitemdb for the product name and any listed Home Depot or Lowe's price.
+- **Receipt import**: upload a Home Depot Pro or Lowe's Pro purchase-history CSV. Matching items get their cost updated, new ones are created, and quantities are added to stock.
+- On each appointment, record materials used. It shows the total at your markup and takes them out of stock.
 
 Customers can only book times that fit your hours, your existing jobs (plus the travel gap), and your time off. A database lock stops two people grabbing the same slot.
 
@@ -37,7 +44,7 @@ Without `RESEND_API_KEY`, emails are printed in the terminal instead of sent.
 ## Checks
 
 ```bash
-npm test          # unit tests for open-slot logic (hours, buffers, notice, daylight saving)
+npm test          # unit tests: open slots, pricing, barcode cleanup, receipt CSV parsing, UPC lookup parsing
 npm run typecheck
 npm run lint
 ```
@@ -52,4 +59,4 @@ npm run lint
 
 ## Roadmap
 
-See the project spec. Next steps: materials and inventory with barcode scanning, then estimates, invoices, and Square payments (cards, Apple Pay, Google Pay, Cash App Pay, ACH) plus Zelle instructions.
+See the project spec. Next step: estimates, invoices, and Square payments (cards, Apple Pay, Google Pay, Cash App Pay, ACH) plus Zelle instructions.

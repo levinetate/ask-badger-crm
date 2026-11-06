@@ -14,6 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin" className="hover:text-amber-800">Calendar</Link>
           <Link href="/admin/appointments/new" className="hover:text-amber-800">New appointment</Link>
           <Link href="/admin/customers" className="hover:text-amber-800">Customers</Link>
+          <Link href="/admin/materials" className="hover:text-amber-800">Materials</Link>
           <Link href="/admin/settings" className="hover:text-amber-800">Settings</Link>
           <span className="flex-1" />
           <Link href="/book" className="text-stone-500 hover:text-amber-800" target="_blank">Booking page ↗</Link>

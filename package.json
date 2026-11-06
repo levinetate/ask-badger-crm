@@ -15,8 +15,11 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "date-fns": "^4.4.0",
     "next": "^15.5.29",
+    "papaparse": "^5.7.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "resend": "^6.37.0",
@@ -25,6 +28,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^22.20.5",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
