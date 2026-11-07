@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// One row. Holds business details and booking rules.
+model BusinessSettings {
+  id               Int      @id @default(1)
+  businessName     String   @default("Ask Badger Electric")
+  ownerEmail       String   @default("")
+  phone            String   @default("")
+  timezone         String   @default("America/New_York")
+  slotIntervalMin  Int      @default(30)
+  bufferMin        Int      @default(30)
+  minNoticeHours   Int      @default(12)
+  maxDaysAhead     Int      @default(30)
+  // Percent, e.g. 8.000 for 8%. Used by invoices later.
+  taxRatePercent   Decimal  @default(8.0) @db.Decimal(6, 3)
+  zelleInfo        String   @default("")
+  updatedAt        DateTime @updatedAt
+}
+
+// Weekly working hours. weekday: 0 = Sunday ... 6 = Saturday.
+// Minutes are counted from local midnight in the business timezone.
+model AvailabilityRule {
+  id          Int @id @default(autoincrement())
+  weekday     Int
+  startMinute Int
+  endMinute   Int
+
+  @@index([weekday])
+}
+
+model BlockedTime {
+  id      Int      @id @default(autoincrement())
+  startAt DateTime
+  endAt   DateTime
+  reason  String   @default("")
+
+  @@index([startAt, endAt])
+}
+
+model ServiceType {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String        @default("")
+  durationMin  Int
+  // Optional starting price shown on the booking page, in cents.
+  priceCents   Int?
+  active       Boolean       @default(true)
+  sortOrder    Int           @default(0)
+  appointments Appointment[]
+}
+
+model Customer {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  phone        String        @default("")
+  address      String        @default("")
+  notes        String        @default("")
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+}
+
+enum AppointmentStatus {
+  SCHEDULED // booked, waiting for the customer to confirm
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Appointment {
+  id             Int               @id @default(autoincrement())
+  customer       Customer          @relation(fields: [customerId], references: [id])
+  customerId     Int
+  serviceType    ServiceType       @relation(fields: [serviceTypeId], references: [id])
+  serviceTypeId  Int
+  startAt        DateTime
+  endAt          DateTime
+  status         AppointmentStatus @default(SCHEDULED)
+  // Secret used in the customer's confirm / reschedule / cancel link.
+  token          String            @unique
+  jobAddress     String            @default("")
+  customerNotes  String            @default("")
+  internalNotes  String            @default("")
+  bookedBy       String            @default("customer") // "customer" or "owner"
+  confirmedAt    DateTime?
+  cancelledAt    DateTime?
+  reminderSentAt DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([startAt])
+  @@index([status, startAt])
+}

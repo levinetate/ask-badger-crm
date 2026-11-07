@@ -1,3 +1,55 @@
 # Ask Badger CRM
 
-Scheduling, estimates, invoicing, and inventory for Ask Badger Electric.
+Scheduling, appointment confirmation, and (coming next) estimates, invoicing, payments, and inventory for Ask Badger Electric.
+
+## What works today
+
+**Customers** (no login needed)
+- `/book` lists services. Customers pick a day and an open time, then enter their details.
+- They get an email with a link to their appointment page (`/a/<secret>`), where they can **confirm**, **reschedule**, or **cancel**.
+- A reminder goes out about 24 hours before the job.
+
+**Owner** (`/admin`, password protected)
+- Week calendar with status of every job, plus a count of jobs still waiting for the customer to confirm.
+- Create appointments yourself (phone bookings), even outside normal hours, and email the customer a confirm link.
+- Move, cancel, complete, or reopen jobs. Private notes and job address per job.
+- Customer list with search and job history.
+- Settings: business details, working hours, gap between jobs, minimum notice, booking window, services offered, time off, sales tax rate, and Zelle details (used by invoices later).
+
+Customers can only book times that fit your hours, your existing jobs (plus the travel gap), and your time off. A database lock stops two people grabbing the same slot.
+
+## Run it locally
+
+You need Node 20+ and Postgres.
+
+```bash
+cp .env.example .env      # then fill in DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET
+npm install
+npm run db:migrate        # creates the tables
+npm run db:seed           # weekday 8-5 hours and some starter electrical services
+npm run dev
+```
+
+Open http://localhost:3000 for the booking page and http://localhost:3000/admin for the owner side.
+
+Without `RESEND_API_KEY`, emails are printed in the terminal instead of sent.
+
+## Checks
+
+```bash
+npm test          # unit tests for open-slot logic (hours, buffers, notice, daylight saving)
+npm run typecheck
+npm run lint
+```
+
+## Deploying (Vercel)
+
+1. Create a hosted Postgres database (for example Neon or Supabase) and copy its connection string.
+2. Import this repo in Vercel and set the variables from `.env.example`. Set `APP_URL` to your real address.
+3. `npm run build` runs database migrations before building.
+4. `vercel.json` runs `/api/cron/reminders` every hour. Vercel sends `CRON_SECRET` with it automatically.
+5. For email, create a Resend account, verify your domain, and set `RESEND_API_KEY` and `EMAIL_FROM`.
+
+## Roadmap
+
+See the project spec. Next steps: materials and inventory with barcode scanning, then estimates, invoices, and Square payments (cards, Apple Pay, Google Pay, Cash App Pay, ACH) plus Zelle instructions.
