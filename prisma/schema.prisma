@@ -21,6 +21,8 @@ model BusinessSettings {
   // Percent, e.g. 8.000 for 8%. Used by invoices later.
   taxRatePercent   Decimal  @default(8.0) @db.Decimal(6, 3)
   zelleInfo        String   @default("")
+  // Default markup on materials, percent over your cost.
+  defaultMarkupPercent Decimal @default(30) @db.Decimal(6, 2)
   updatedAt        DateTime @updatedAt
 }
 
@@ -92,9 +94,60 @@ model Appointment {
   confirmedAt    DateTime?
   cancelledAt    DateTime?
   reminderSentAt DateTime?
+  stockMovements StockMovement[]
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
   @@index([startAt])
   @@index([status, startAt])
+}
+
+// A part or supply you buy and use on jobs.
+model Material {
+  id              Int             @id @default(autoincrement())
+  name            String
+  barcode         String?         @unique // UPC/EAN printed on the package
+  sku             String          @default("") // store item number (Home Depot "Internet #"/SKU, Lowe's item #)
+  store           String          @default("") // "Home Depot", "Lowe's", or other supplier
+  category        String          @default("")
+  unit            String          @default("each")
+  costCents       Int             @default(0) // what you pay per unit
+  // Null means use the business default markup.
+  markupPercent   Decimal?        @db.Decimal(6, 2)
+  quantityOnHand  Decimal         @default(0) @db.Decimal(12, 2)
+  reorderAt       Decimal?        @db.Decimal(12, 2)
+  location        String          @default("") // e.g. "Truck", "Shop"
+  notes           String          @default("")
+  active          Boolean         @default(true)
+  costUpdatedAt   DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  movements       StockMovement[]
+
+  @@index([sku])
+  @@index([name])
+}
+
+enum StockReason {
+  PURCHASE // bought more
+  USED // used on a job
+  COUNT // set to a counted amount
+  ADJUST // anything else (returned, damaged)
+}
+
+// Every change to stock, so counts can be explained later.
+model StockMovement {
+  id            Int          @id @default(autoincrement())
+  material      Material     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  materialId    Int
+  change        Decimal      @db.Decimal(12, 2)
+  reason        StockReason
+  unitCostCents Int?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  appointmentId Int?
+  note          String       @default("")
+  createdAt     DateTime     @default(now())
+
+  @@index([materialId, createdAt])
+  @@index([appointmentId])
 }

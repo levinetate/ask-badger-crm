@@ -35,6 +35,7 @@ export default async function SettingsPage() {
         {num("minNoticeHours", "Minimum notice (hours)")}
         {num("maxDaysAhead", "How far ahead customers can book (days)")}
         {num("taxRatePercent", "Sales tax rate (%)", "Columbia County, GA defaults to 8%. Confirm with your accountant. Used by invoices later.")}
+        {num("defaultMarkupPercent", "Default markup on materials (%)", "Added to your cost when pricing materials. Each item can override it.")}
         <div><label className="label" htmlFor="zelleInfo">Zelle details for invoices</label><input className="input" id="zelleInfo" name="zelleInfo" defaultValue={s.zelleInfo} placeholder="Phone or email registered with Zelle" /></div>
         <div className="sm:col-span-2"><button className="btn-primary">Save business settings</button></div>
       </form>
