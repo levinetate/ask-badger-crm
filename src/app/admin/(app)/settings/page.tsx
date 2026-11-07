@@ -1,6 +1,6 @@
 import { db, getSettings } from "@/lib/db";
 import { formatDateTime, minutesToHHMM } from "@/lib/time";
-import { addBlock, deleteBlock, saveBusiness, saveHours, saveService } from "./actions";
+import { addBlock, deleteBlock, saveBusiness, saveHours, saveService, starterSetup } from "./actions";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -23,6 +23,12 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">Settings</h1>
+      {(rules.length === 0 || services.length === 0) && (
+        <form action={starterSetup} className="card flex flex-wrap items-center justify-between gap-3 border-amber-300 bg-amber-50">
+          <p className="text-sm">New here? Load weekday 8 to 5 hours and some common electrical services to start with. You can change them all below.</p>
+          <button className="btn-primary">Load starter setup</button>
+        </form>
+      )}
 
       <form action={saveBusiness} className="card grid gap-4 sm:grid-cols-2">
         <h2 className="font-medium sm:col-span-2">Business</h2>
