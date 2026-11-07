@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { db, getSettings } from "@/lib/db";
+import { loadStarterSetup } from "@/lib/starter";
 import { parseHHMM, zonedToUtc } from "@/lib/time";
 
 const done = () => revalidatePath("/admin/settings");
@@ -97,5 +98,11 @@ export async function addBlock(form: FormData) {
 export async function deleteBlock(form: FormData) {
   await requireAdmin();
   await db.blockedTime.delete({ where: { id: Number(form.get("id")) } });
+  done();
+}
+
+export async function starterSetup() {
+  await requireAdmin();
+  await loadStarterSetup();
   done();
 }

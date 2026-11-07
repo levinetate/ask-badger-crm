@@ -7,7 +7,7 @@ Scheduling, appointment confirmation, materials and inventory, estimates, invoic
 **Customers** (no login needed)
 - `/book` lists services. Customers pick a day and an open time, then enter their details.
 - They get an email with a link to their appointment page (`/a/<secret>`), where they can **confirm**, **reschedule**, or **cancel**.
-- A reminder goes out about 24 hours before the job.
+- A reminder goes out the evening before the job.
 
 **Owner** (`/admin`, password protected)
 - Week calendar with status of every job, plus a count of jobs still waiting for the customer to confirm.
@@ -43,7 +43,7 @@ You need Node 20+ and Postgres.
 cp .env.example .env      # then fill in DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET
 npm install
 npm run db:migrate        # creates the tables
-npm run db:seed           # weekday 8-5 hours and some starter electrical services
+npm run db:seed           # weekday 8-5 hours and starter services (or use "Load starter setup" in Settings)
 npm run dev
 ```
 
@@ -72,5 +72,5 @@ npm run lint
 1. Create a hosted Postgres database (for example Neon or Supabase) and copy its connection string.
 2. Import this repo in Vercel and set the variables from `.env.example`. Set `APP_URL` to your real address.
 3. `npm run build` runs database migrations before building.
-4. `vercel.json` runs `/api/cron/reminders` every hour. Vercel sends `CRON_SECRET` with it automatically.
+4. `vercel.json` runs `/api/cron/reminders` once a day at 22:00 UTC (5 or 6 pm Eastern), which works on Vercel's free plan. It reminds customers about appointments today and tomorrow. Vercel sends `CRON_SECRET` with it automatically.
 5. For email, create a Resend account, verify your domain, and set `RESEND_API_KEY` and `EMAIL_FROM`.
