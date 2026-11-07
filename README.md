@@ -40,7 +40,7 @@ Customers can only book times that fit your hours, your existing jobs (plus the 
 You need Node 20+ and Postgres.
 
 ```bash
-cp .env.example .env      # then fill in DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET
+cp .env.example .env      # then fill in DATABASE_URL, DATABASE_URL_UNPOOLED, ADMIN_PASSWORD, SESSION_SECRET
 npm install
 npm run db:migrate        # creates the tables
 npm run db:seed           # weekday 8-5 hours and starter services (or use "Load starter setup" in Settings)
@@ -69,7 +69,7 @@ npm run lint
 
 ## Deploying (Vercel)
 
-1. Create a hosted Postgres database (for example Neon or Supabase) and copy its connection string.
+1. In the Vercel project, open **Storage → Create Database → Neon** and connect it. This sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED` for you. If you use another Postgres host, set both yourself, with the direct (non-pooled) string in `DATABASE_URL_UNPOOLED`.
 2. Import this repo in Vercel and set the variables from `.env.example`. Set `APP_URL` to your real address.
 3. `npm run build` runs database migrations before building.
 4. `vercel.json` runs `/api/cron/reminders` once a day at 22:00 UTC (5 or 6 pm Eastern), which works on Vercel's free plan. It reminds customers about appointments today and tomorrow. Vercel sends `CRON_SECRET` with it automatically.
