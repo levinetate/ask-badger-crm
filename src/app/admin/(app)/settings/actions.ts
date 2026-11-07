@@ -22,11 +22,15 @@ const businessSchema = z.object({
   taxRatePercent: z.coerce.number().min(0).max(30),
   zelleInfo: z.string().trim().max(200),
   defaultMarkupPercent: z.coerce.number().min(0).max(500),
+  laborRate: z.string().trim().transform((s) => Math.round(Number(s.replace(/[$,]/g, "") || "0") * 100)).pipe(z.number().int().min(0)),
+  invoiceDueDays: z.coerce.number().int().min(0).max(120),
+  documentFooter: z.string().max(1000),
 });
 
 export async function saveBusiness(form: FormData) {
   await requireAdmin();
-  const data = businessSchema.parse(Object.fromEntries(form));
+  const { laborRate, ...rest } = businessSchema.parse(Object.fromEntries(form));
+  const data = { ...rest, laborRateCents: laborRate };
   await db.businessSettings.upsert({ where: { id: 1 }, create: { id: 1, ...data }, update: data });
   done();
 }

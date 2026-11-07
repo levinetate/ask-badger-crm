@@ -109,3 +109,7 @@ export function parseHHMM(s: string): number | null {
 export function minutesToHHMM(min: number): string {
   return `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 }
+
+export function formatDate(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-US", { timeZone, month: "short", day: "numeric", year: "numeric" }).format(date);
+}
