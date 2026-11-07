@@ -34,9 +34,12 @@ export default async function SettingsPage() {
         {num("bufferMin", "Gap between jobs (minutes)", "Travel and cleanup time kept free around each job.")}
         {num("minNoticeHours", "Minimum notice (hours)")}
         {num("maxDaysAhead", "How far ahead customers can book (days)")}
-        {num("taxRatePercent", "Sales tax rate (%)", "Columbia County, GA defaults to 8%. Confirm with your accountant. Used by invoices later.")}
+        {num("taxRatePercent", "Sales tax rate (%)", "Columbia County, GA defaults to 8%. Confirm with your accountant. Applies to lines marked taxable.")}
+        <div><label className="label" htmlFor="laborRate">Labor rate ($ per hour)</label><input className="input" id="laborRate" name="laborRate" inputMode="decimal" defaultValue={(s.laborRateCents / 100).toFixed(2)} /></div>
+        {num("invoiceDueDays", "Invoices due after (days)")}
         {num("defaultMarkupPercent", "Default markup on materials (%)", "Added to your cost when pricing materials. Each item can override it.")}
         <div><label className="label" htmlFor="zelleInfo">Zelle details for invoices</label><input className="input" id="zelleInfo" name="zelleInfo" defaultValue={s.zelleInfo} placeholder="Phone or email registered with Zelle" /></div>
+        <div className="sm:col-span-2"><label className="label" htmlFor="documentFooter">Footer on estimates and invoices</label><textarea className="input" id="documentFooter" name="documentFooter" rows={2} defaultValue={s.documentFooter} placeholder="License #, warranty terms, thank-you note" /></div>
         <div className="sm:col-span-2"><button className="btn-primary">Save business settings</button></div>
       </form>
 

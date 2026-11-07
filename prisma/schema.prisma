@@ -23,6 +23,11 @@ model BusinessSettings {
   zelleInfo        String   @default("")
   // Default markup on materials, percent over your cost.
   defaultMarkupPercent Decimal @default(30) @db.Decimal(6, 2)
+  // Default hourly labor rate for estimates and invoices, in cents. 0 = not set yet.
+  laborRateCents   Int      @default(0)
+  // Shown at the bottom of estimates and invoices.
+  documentFooter   String   @default("")
+  invoiceDueDays   Int      @default(7)
   updatedAt        DateTime @updatedAt
 }
 
@@ -67,6 +72,8 @@ model Customer {
   notes        String        @default("")
   createdAt    DateTime      @default(now())
   appointments Appointment[]
+  estimates    Estimate[]
+  invoices     Invoice[]
 }
 
 enum AppointmentStatus {
@@ -95,6 +102,8 @@ model Appointment {
   cancelledAt    DateTime?
   reminderSentAt DateTime?
   stockMovements StockMovement[]
+  estimates      Estimate[]
+  invoices       Invoice[]
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
@@ -123,6 +132,7 @@ model Material {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   movements       StockMovement[]
+  lineItems       LineItem[]
 
   @@index([sku])
   @@index([name])
@@ -150,4 +160,137 @@ model StockMovement {
 
   @@index([materialId, createdAt])
   @@index([appointmentId])
+}
+
+enum EstimateStatus {
+  DRAFT
+  SENT
+  APPROVED
+  DECLINED
+  INVOICED
+}
+
+model Estimate {
+  id             Int            @id @default(autoincrement())
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  customerId     Int
+  appointment    Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  appointmentId  Int?
+  status         EstimateStatus @default(DRAFT)
+  token          String         @unique
+  title          String         @default("")
+  notes          String         @default("") // shown to the customer
+  jobAddress     String         @default("")
+  validUntil     DateTime?
+  taxRatePercent Decimal        @db.Decimal(6, 3)
+  subtotalCents  Int            @default(0)
+  taxCents       Int            @default(0)
+  totalCents     Int            @default(0)
+  sentAt         DateTime?
+  approvedAt     DateTime?
+  approvedName   String         @default("") // name the customer typed to approve
+  declinedAt     DateTime?
+  declineReason  String         @default("")
+  lineItems      LineItem[]
+  invoice        Invoice?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([status])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  VOID
+}
+
+model Invoice {
+  id             Int           @id @default(autoincrement())
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  customerId     Int
+  estimate       Estimate?     @relation(fields: [estimateId], references: [id], onDelete: SetNull)
+  estimateId     Int?          @unique
+  appointment    Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  appointmentId  Int?
+  status         InvoiceStatus @default(DRAFT)
+  token          String        @unique
+  title          String        @default("")
+  notes          String        @default("")
+  jobAddress     String        @default("")
+  dueDate        DateTime?
+  taxRatePercent Decimal       @db.Decimal(6, 3)
+  subtotalCents  Int           @default(0)
+  taxCents       Int           @default(0)
+  totalCents     Int           @default(0)
+  amountPaidCents Int          @default(0) // completed payments only
+  sentAt         DateTime?
+  paidAt         DateTime?
+  lineItems      LineItem[]
+  payments       Payment[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status])
+}
+
+enum LineKind {
+  LABOR
+  MATERIAL
+  OTHER
+}
+
+// A line on an estimate or an invoice (exactly one of the two is set).
+model LineItem {
+  id             Int       @id @default(autoincrement())
+  estimate       Estimate? @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  estimateId     Int?
+  invoice        Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId      Int?
+  kind           LineKind  @default(OTHER)
+  description    String
+  quantity       Decimal   @db.Decimal(12, 2)
+  unitPriceCents Int
+  taxable        Boolean   @default(false)
+  material       Material? @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  materialId     Int?
+  sortOrder      Int       @default(0)
+
+  @@index([estimateId])
+  @@index([invoiceId])
+}
+
+enum PaymentMethod {
+  SQUARE_CARD
+  SQUARE_APPLE_PAY
+  SQUARE_GOOGLE_PAY
+  SQUARE_CASH_APP
+  SQUARE_ACH
+  ZELLE
+  CASH
+  CHECK
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING // e.g. a bank transfer that hasn't cleared
+  COMPLETED
+  FAILED
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId       Int
+  method          PaymentMethod
+  status          PaymentStatus
+  amountCents     Int
+  squarePaymentId String?       @unique
+  receiptUrl      String        @default("")
+  note            String        @default("")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([invoiceId])
 }

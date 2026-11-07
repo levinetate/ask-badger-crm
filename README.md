@@ -1,6 +1,6 @@
 # Ask Badger CRM
 
-Scheduling, appointment confirmation, materials and inventory, and (coming next) estimates, invoicing, and payments for Ask Badger Electric.
+Scheduling, appointment confirmation, materials and inventory, estimates, invoices, and payments for Ask Badger Electric.
 
 ## What works today
 
@@ -23,6 +23,16 @@ Scheduling, appointment confirmation, materials and inventory, and (coming next)
 - **Receipt import**: upload a Home Depot Pro or Lowe's Pro purchase-history CSV. Matching items get their cost updated, new ones are created, and quantities are added to stock.
 - On each appointment, record materials used. It shows the total at your markup and takes them out of stock.
 
+**Estimates, invoices, and payments**
+- Build an estimate from labor (your hourly rate) and materials (your cost plus markup), plus any other lines and discounts. Tax applies per line: materials are taxable by default and labor is not. Confirm the right treatment for Georgia with your accountant.
+- "Create estimate" or "Create invoice" on an appointment fills in the labor for the booked time and the materials logged on the job.
+- Customers open the estimate link, type their name, and approve it, or decline with a reason. You get an email either way.
+- One click turns an approved estimate into an invoice, due after your default number of days.
+- The customer's invoice page takes **Square** payments: card, Apple Pay, Google Pay, Cash App Pay, and bank transfer (ACH). It also shows your **Zelle** details with the invoice number to use as the memo.
+- Card and wallet payments mark the invoice paid right away. Bank transfers show as processing until Square's webhook reports them cleared.
+- Record Zelle, cash, or check payments yourself, including partial payments, and email a receipt.
+- The invoice list shows the outstanding and overdue totals.
+
 Customers can only book times that fit your hours, your existing jobs (plus the travel gap), and your time off. A database lock stops two people grabbing the same slot.
 
 ## Run it locally
@@ -41,10 +51,18 @@ Open http://localhost:3000 for the booking page and http://localhost:3000/admin 
 
 Without `RESEND_API_KEY`, emails are printed in the terminal instead of sent.
 
+## Setting up Square
+
+1. Go to https://developer.squareup.com/apps, sign in with your Square account, and create an application.
+2. Start with the **Sandbox** tab. Copy the Application ID, Access token, and a Location ID into `.env` with `SQUARE_ENVIRONMENT="sandbox"`. Pay a test invoice with Square's test card `4111 1111 1111 1111`.
+3. Under **Webhooks**, add a subscription for `payment.created` and `payment.updated` pointing to `https://<your domain>/api/square/webhook`. Put that exact URL in `SQUARE_WEBHOOK_URL` and the signature key in `SQUARE_WEBHOOK_SIGNATURE_KEY`.
+4. **Apple Pay** only shows after you register your domain in the Square Developer Dashboard (Apple Pay section). **Google Pay** and **Cash App Pay** need no extra setup.
+5. When it all works, switch to the **Production** values and set `SQUARE_ENVIRONMENT="production"`.
+
 ## Checks
 
 ```bash
-npm test          # unit tests: open slots, pricing, barcode cleanup, receipt CSV parsing, UPC lookup parsing
+npm test          # unit tests: open slots, pricing, barcode cleanup, receipt CSV, UPC lookup, invoice totals and tax, Square webhook signatures
 npm run typecheck
 npm run lint
 ```
@@ -56,7 +74,3 @@ npm run lint
 3. `npm run build` runs database migrations before building.
 4. `vercel.json` runs `/api/cron/reminders` every hour. Vercel sends `CRON_SECRET` with it automatically.
 5. For email, create a Resend account, verify your domain, and set `RESEND_API_KEY` and `EMAIL_FROM`.
-
-## Roadmap
-
-See the project spec. Next step: estimates, invoices, and Square payments (cards, Apple Pay, Google Pay, Cash App Pay, ACH) plus Zelle instructions.

@@ -55,6 +55,8 @@ export default async function AppointmentDetail({ params, searchParams }: Props)
             {(appt.status === "SCHEDULED" || appt.status === "CONFIRMED") && statusButton("COMPLETED", "Mark completed")}
             {(appt.status === "SCHEDULED" || appt.status === "CONFIRMED") && statusButton("CANCELLED", "Cancel and email customer", "btn-danger")}
             {(appt.status === "CANCELLED" || appt.status === "COMPLETED") && statusButton("SCHEDULED", "Reopen")}
+            <Link className="btn-secondary" href={`/admin/estimates/new?appointment=${appt.id}`}>Create estimate</Link>
+            <Link className="btn-secondary" href={`/admin/invoices/new?appointment=${appt.id}`}>Create invoice</Link>
             {(appt.status === "SCHEDULED" || appt.status === "CONFIRMED") && (
               <form action={resendConfirmation}>
                 <input type="hidden" name="id" value={appt.id} />
