@@ -30,6 +30,8 @@ model BusinessSettings {
   // Shown at the bottom of estimates and invoices.
   documentFooter   String   @default("")
   invoiceDueDays   Int      @default(7)
+  // Email the owner the first time a customer opens an estimate or invoice.
+  notifyOnOpen     Boolean  @default(true)
   updatedAt        DateTime @updatedAt
 }
 
@@ -193,6 +195,8 @@ model Estimate {
   approvedName   String         @default("") // name the customer typed to approve
   declinedAt     DateTime?
   declineReason  String         @default("")
+  openedAt       DateTime?      // first time the email was opened (tracking pixel)
+  viewedAt       DateTime?      // first time the customer opened the link
   lineItems      LineItem[]
   invoice        Invoice?
   createdAt      DateTime       @default(now())
@@ -229,6 +233,8 @@ model Invoice {
   amountPaidCents Int          @default(0) // completed payments only
   sentAt         DateTime?
   paidAt         DateTime?
+  openedAt       DateTime?     // first time the email was opened (tracking pixel)
+  viewedAt       DateTime?     // first time the customer opened the link
   lineItems      LineItem[]
   payments       Payment[]
   createdAt      DateTime      @default(now())

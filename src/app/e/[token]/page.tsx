@@ -5,6 +5,7 @@ import { db, getSettings } from "@/lib/db";
 import { estimateNumber } from "@/lib/documents";
 import { formatDate } from "@/lib/time";
 import { approveEstimate, declineEstimate } from "./actions";
+import { recordOpen, viewerIsOwner } from "@/lib/openTracking";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,7 @@ export default async function CustomerEstimatePage({ params, searchParams }: Pro
   const sp = await searchParams;
   const est = await db.estimate.findUnique({ where: { token }, include: { customer: true, lineItems: true } });
   if (!est || est.status === "DRAFT") notFound();
+  if (!(await viewerIsOwner())) await recordOpen("e", token, "link");
   const s = await getSettings();
   const expired = est.validUntil != null && est.validUntil < new Date();
   const open = est.status === "SENT" && !expired;

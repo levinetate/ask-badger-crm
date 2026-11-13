@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/format";
 import { squareConfigured, squareEnv } from "@/lib/square";
 import { formatDate } from "@/lib/time";
 import SquarePay from "./SquarePay";
+import { recordOpen, viewerIsOwner } from "@/lib/openTracking";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export default async function CustomerInvoicePage({ params }: { params: Promise<
   const { token } = await params;
   const inv = await db.invoice.findUnique({ where: { token }, include: { customer: true, lineItems: true, payments: { orderBy: { createdAt: "asc" } } } });
   if (!inv || inv.status === "DRAFT") notFound();
+  if (!(await viewerIsOwner())) await recordOpen("i", token, "link");
   const s = await getSettings();
   const due = amountDueCents(inv);
   const pending = inv.payments.find((p) => p.status === "PENDING");

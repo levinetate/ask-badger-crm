@@ -74,7 +74,7 @@ export async function notifyOwner(appt: Full, s: BusinessSettings, what: string)
 
 // --- Estimates and invoices ---
 
-function docEmail(s: BusinessSettings, to: string, subject: string, paragraphs: string[], button?: { label: string; url: string }) {
+function docEmail(s: BusinessSettings, to: string, subject: string, paragraphs: string[], button?: { label: string; url: string }, pixelUrl?: string) {
   const text = [...paragraphs, button ? `${button.label}: ${button.url}` : "", s.phone ? `Questions? Call ${s.phone}.` : "", `- ${s.businessName}`]
     .filter(Boolean)
     .join("\n\n");
@@ -82,7 +82,7 @@ function docEmail(s: BusinessSettings, to: string, subject: string, paragraphs: 
 ${paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("\n")}
 ${button ? `<p><a href="${button.url}" style="display:inline-block;padding:10px 18px;background:#b45309;color:#fff;border-radius:6px;text-decoration:none">${escapeHtml(button.label)}</a></p>` : ""}
 ${s.phone ? `<p>Questions? Call ${escapeHtml(s.phone)}.</p>` : ""}
-<p>${escapeHtml(s.businessName)}</p></div>`;
+<p>${escapeHtml(s.businessName)}</p>${pixelUrl ? `<img src="${pixelUrl}" width="1" height="1" alt="" style="border:0;width:1px;height:1px">` : ""}</div>`;
   return sendEmail({ to, subject, text, html });
 }
 
@@ -95,6 +95,7 @@ export function emailEstimate(s: BusinessSettings, e: { token: string; number: s
     `${s.businessName}: estimate ${e.number}${e.title ? ` for ${e.title}` : ""}`,
     [`Hi ${e.customer.name},`, `Here is your estimate ${e.number} for ${usd(e.totalCents)}. You can review and approve it online.`],
     { label: "Review estimate", url: appUrl(`/e/${e.token}`) },
+    appUrl(`/api/open/e/${e.token}`),
   );
 }
 
@@ -106,6 +107,7 @@ export function emailInvoice(s: BusinessSettings, i: { token: string; number: st
     `${s.businessName}: invoice ${i.number}`,
     [`Hi ${i.customer.name},`, `Here is invoice ${i.number} for ${usd(i.dueCents)}.${due} You can pay online by card, Apple Pay, Google Pay, Cash App, or bank transfer${s.zelleInfo ? ", or by Zelle" : ""}.`],
     { label: "View and pay invoice", url: appUrl(`/i/${i.token}`) },
+    appUrl(`/api/open/i/${i.token}`),
   );
 }
 
